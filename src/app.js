@@ -2,13 +2,17 @@ const path = require("path");
 const express = require("express");
 const categories = require("./categories");
 const { HttpError } = require("./validation");
+const auth = require("./auth");
 
 const app = express();
+if (process.env.TRUST_PROXY) app.set("trust proxy", Number(process.env.TRUST_PROXY) || process.env.TRUST_PROXY);
 app.use(express.json({ limit: "100kb" }));
+app.use("/api", auth.requireJson);
 
+app.use("/api/auth", auth.router);
 app.get("/api/categories", (req, res) => res.json(categories));
-app.use("/api/transactions", require("./routes/transactions"));
-app.use("/api/dashboard", require("./routes/dashboard"));
+app.use("/api/transactions", auth.requireAuth, require("./routes/transactions"));
+app.use("/api/dashboard", auth.requireAuth, require("./routes/dashboard"));
 app.use("/api", (req, res, next) => next(new HttpError(404, "Rota não encontrada.")));
 
 app.use(express.static(path.join(__dirname, "..", "public")));

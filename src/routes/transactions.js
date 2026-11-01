@@ -13,8 +13,8 @@ const toApi = (r) => ({
   date: r.date,
 });
 
-const getOr404 = (id) => {
-  const row = db.prepare("SELECT * FROM transactions WHERE id = ?").get(id);
+const getOr404 = (id, userId) => {
+  const row = db.prepare("SELECT * FROM transactions WHERE id = ? AND user_id = ?").get(id, userId);
   if (!row) throw new HttpError(404, "Lançamento não encontrado.");
   return row;
 };
@@ -22,8 +22,8 @@ const getOr404 = (id) => {
 // Lista com filtros: ?month=AAAA-MM&type=in|out&category=...&q=texto
 router.get("/", (req, res) => {
   const { month, type, category, q } = req.query;
-  const where = [];
-  const params = [];
+  const where = ["user_id = ?"];
+  const params = [req.user.id];
   if (month) {
     if (!isMonth(month)) throw new HttpError(400, "Parâmetro month inválido. Use AAAA-MM.");
     where.push("substr(date,1,7) = ?");
@@ -32,34 +32,34 @@ router.get("/", (req, res) => {
   if (type) { where.push("type = ?"); params.push(type); }
   if (category) { where.push("category = ?"); params.push(category); }
   if (q) { where.push("description LIKE ?"); params.push(`%${q}%`); }
-  const sql = `SELECT * FROM transactions ${where.length ? "WHERE " + where.join(" AND ") : ""}
+  const sql = `SELECT * FROM transactions WHERE ${where.join(" AND ")}
                ORDER BY date DESC, id DESC`;
   res.json(db.prepare(sql).all(...params).map(toApi));
 });
 
-router.get("/:id", (req, res) => res.json(toApi(getOr404(req.params.id))));
+router.get("/:id", (req, res) => res.json(toApi(getOr404(req.params.id, req.user.id))));
 
 router.post("/", (req, res) => {
   const t = parseTransaction(req.body);
   const info = db
-    .prepare("INSERT INTO transactions (description, amount_cents, type, category, date) VALUES (?,?,?,?,?)")
-    .run(t.description, t.amount_cents, t.type, t.category, t.date);
-  res.status(201).json(toApi(getOr404(info.lastInsertRowid)));
+    .prepare("INSERT INTO transactions (user_id, description, amount_cents, type, category, date) VALUES (?,?,?,?,?,?)")
+    .run(req.user.id, t.description, t.amount_cents, t.type, t.category, t.date);
+  res.status(201).json(toApi(getOr404(info.lastInsertRowid, req.user.id)));
 });
 
 router.put("/:id", (req, res) => {
-  getOr404(req.params.id);
+  getOr404(req.params.id, req.user.id);
   const t = parseTransaction(req.body);
   db.prepare(
     `UPDATE transactions SET description=?, amount_cents=?, type=?, category=?, date=?,
-     updated_at=datetime('now') WHERE id=?`
-  ).run(t.description, t.amount_cents, t.type, t.category, t.date, req.params.id);
-  res.json(toApi(getOr404(req.params.id)));
+     updated_at=datetime('now') WHERE id=? AND user_id=?`
+  ).run(t.description, t.amount_cents, t.type, t.category, t.date, req.params.id, req.user.id);
+  res.json(toApi(getOr404(req.params.id, req.user.id)));
 });
 
 router.delete("/:id", (req, res) => {
-  getOr404(req.params.id);
-  db.prepare("DELETE FROM transactions WHERE id = ?").run(req.params.id);
+  getOr404(req.params.id, req.user.id);
+  db.prepare("DELETE FROM transactions WHERE id = ? AND user_id = ?").run(req.params.id, req.user.id);
   res.status(204).end();
 });
 

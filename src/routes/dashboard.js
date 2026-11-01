@@ -15,16 +15,16 @@ router.get("/", (req, res) => {
   if (!isMonth(month)) throw new HttpError(400, "Parâmetro month inválido. Use AAAA-MM.");
 
   const totalOf = (m, type) =>
-    db.prepare("SELECT COALESCE(SUM(amount_cents),0) s FROM transactions WHERE substr(date,1,7)=? AND type=?")
-      .get(m, type).s / 100;
+    db.prepare("SELECT COALESCE(SUM(amount_cents),0) s FROM transactions WHERE user_id=? AND substr(date,1,7)=? AND type=?")
+      .get(req.user.id, m, type).s / 100;
 
   const income = totalOf(month, "in");
   const expense = totalOf(month, "out");
 
   const byCategory = db
     .prepare(`SELECT category, SUM(amount_cents)/100.0 AS total FROM transactions
-              WHERE substr(date,1,7)=? AND type='out' GROUP BY category ORDER BY total DESC`)
-    .all(month);
+              WHERE user_id=? AND substr(date,1,7)=? AND type='out' GROUP BY category ORDER BY total DESC`)
+    .all(req.user.id, month);
 
   const history = [];
   for (let i = 5; i >= 0; i--) {

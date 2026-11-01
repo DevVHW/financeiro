@@ -429,3 +429,62 @@ label textarea {
         transition: none !important
     }
 }
+
+.who {
+    color: var(--mute);
+    font-size: 14px
+}
+
+.auth {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 20px 16px
+}
+
+.auth .card {
+    width: min(400px, 100%);
+    padding: 24px
+}
+
+.auth h1 {
+    margin-bottom: 4px
+}
+
+.auth p.sub {
+    margin: 0 0 16px;
+    color: var(--mute)
+}
+
+.tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 16px
+}
+
+.tabs button {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 8px;
+    cursor: pointer;
+    font-weight: 500
+}
+
+.tabs button[aria-selected="true"] {
+    background: var(--acc);
+    color: var(--acc-ink);
+    border-color: var(--acc)
+}
+
+.auth .btn.pri {
+    width: 100%;
+    padding: 10px
+}
+
+.hint {
+    font-size: 12.5px;
+    color: var(--mute);
+    margin: -6px 0 10px
+}

@@ -17,7 +17,10 @@ async function api(path, opts = {}) {
     ...opts,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
-  if (res.status === 204) return null;
+    if (res.status === 401 && !path.startsWith("/auth/")) {
+    location.href = "/login.html";
+    throw new Error("Sessão expirada. Entre novamente.");
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const first = data.details && Object.values(data.details)[0];
@@ -194,7 +197,19 @@ $("#q").addEventListener("input", () => { clearTimeout(timer); timer = setTimeou
 $("#ft").addEventListener("change", render);
 $("#fc").addEventListener("change", render);
 
+$("#logout").onclick = async () => {
+  try { await api("/auth/logout", { method: "POST" }); } catch (e) { /* sai de qualquer forma */ }
+  location.href = "/login.html";
+};
+
 (async function init() {
+  try {
+    const me = await api("/auth/me");
+    $("#who").textContent = me.name;
+  } catch (e) {
+    location.href = "/login.html";
+    return;
+  }
   try {
     cats = await api("/categories");
     const all = [...new Set([...cats.out, ...cats.in])];
