@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Controle Financeiro</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Controle Financeiro</h1>
+  <div class="bar">
+    <div class="month">
+      <button class="btn" id="prev" aria-label="Mês anterior">‹</button>
+      <input type="month" id="month" aria-label="Mês">
+      <button class="btn" id="next" aria-label="Próximo mês">›</button>
+    </div>
+    <button class="btn pri" id="add">+ Novo lançamento</button>
+  </div>
+</header>
+
+<section class="grid kpis" id="kpis"></section>
+
+<section class="grid charts">
+  <div class="card"><h2>Despesas por categoria</h2><div id="donut"></div></div>
+  <div class="card"><h2>Últimos 6 meses</h2><div id="bars"></div></div>
+</section>
+
+<section class="card">
+  <h2>Lançamentos</h2>
+  <div class="filters">
+    <input type="search" id="q" placeholder="Buscar por descrição" aria-label="Buscar">
+    <select id="ft" aria-label="Tipo"><option value="">Todos os tipos</option><option value="in">Receitas</option><option value="out">Despesas</option></select>
+    <select id="fc" aria-label="Categoria"></select>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th class="r">Valor</th><th class="r">Ações</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</section>
+</div>
+
+<dialog id="dlg">
+  <form id="f" novalidate>
+    <h2 id="dt">Novo lançamento</h2>
+    <div class="seg" role="radiogroup" aria-label="Tipo">
+      <label><input type="radio" name="type" value="out" checked>Despesa</label>
+      <label><input type="radio" name="type" value="in">Receita</label>
+    </div>
+    <label>Descrição<input name="desc" maxlength="60" placeholder="Ex.: Mercado da semana"></label>
+    <div class="row2">
+      <label>Valor (R$)<input name="amount" inputmode="decimal" placeholder="0,00"></label>
+      <label>Data<input name="date" type="date"></label>
+    </div>
+    <label>Categoria<select name="cat"></select></label>
+    <p class="err" id="err" role="alert"></p>
+    <div class="acts">
+      <button type="button" class="btn" id="cancel">Cancelar</button>
+      <button type="submit" class="btn pri" id="save">Salvar lançamento</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="cdlg">
+  <h2>Excluir lançamento?</h2>
+  <p id="ctext" style="color:var(--mute);margin-top:0"></p>
+  <div class="acts"><button class="btn" id="cno">Manter</button><button class="btn danger" id="cyes">Excluir</button></div>
+</dialog>
+<div id="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
